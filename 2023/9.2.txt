@@ -1,0 +1,50 @@
+namespace ConsoleApp18
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            Int64 sum = 0;
+            
+            string[] lines = File.ReadAllLines("input.txt");
+            
+            foreach (string subsequence in lines)
+            {
+                List<Int64> numbers = subsequence.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToList();
+                sum += GetResultNumberFromSequence(numbers, new List<Int64> {numbers[0]});
+            }
+            
+            Console.WriteLine(sum);
+        }
+
+        private static Int64 GetResultNumberFromSequence(List<Int64> numbers, List<Int64> lastNumbers)
+        {
+            List<Int64> minusNumbers = new List<Int64>();
+            bool allNumbersIsZero = true;
+            
+            for (int i = 0; i < numbers.Count - 1; i++)
+            {
+                Int64 number = numbers[i + 1] - numbers[i];
+                minusNumbers.Add(number);
+                if (number != 0)
+                {
+                    allNumbersIsZero = false;
+                }
+            }
+            
+            lastNumbers.Add(minusNumbers[0]);
+            
+            if (allNumbersIsZero || minusNumbers.Count == 1)
+            {
+                Int64 result = 0;
+                for (int i = lastNumbers.Count - 1; i >= 0; i--)
+                {
+                    result = lastNumbers[i] - result;
+                }
+                return result;
+            }
+
+            return GetResultNumberFromSequence(minusNumbers, lastNumbers);
+        }
+    }
+}

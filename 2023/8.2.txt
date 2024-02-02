@@ -1,0 +1,102 @@
+namespace ConsoleApp21
+{
+    internal class Program
+    {
+        public static Dictionary<string, (string, string)> Directions = new();
+        
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            string path = lines[0];
+            int pathIndex = 0;
+            Int64 counter = 1;
+            List<string> nodes = new List<string>();
+            List<Int64> steps = new List<Int64>();
+
+            for (Int64 i = 2; i < lines.Length; i++)
+            {
+                string node = lines[i][0].ToString() + lines[i][1].ToString() + lines[i][2].ToString();
+                string left = lines[i][7].ToString() + lines[i][8].ToString() + lines[i][9].ToString();
+                string right = lines[i][12].ToString() + lines[i][13].ToString() + lines[i][14].ToString();
+
+                if (node[2] == 'A')
+                {
+                    nodes.Add(node);
+                }
+
+                Directions.Add(node, (left, right));
+            }
+
+            while (CheckNodes(nodes))
+            {
+                if (pathIndex == path.Length)
+                {
+                    pathIndex = 0;
+                }
+
+                for (int i = 0; i < nodes.Count; i++)
+                {
+                    if (path[pathIndex] == 'L')
+                    {
+                        nodes[i] = Directions[nodes[i]].Item1;
+                    }
+                    else
+                    {
+                        nodes[i] = Directions[nodes[i]].Item2;
+                    }
+                    Console.Write(nodes[i] + " ");
+
+                    if (nodes[i][2] == 'Z')
+                    {
+                        steps.Add(counter);
+                        nodes.RemoveAt(i);
+                        i--;
+                    }
+                }
+                
+                Console.WriteLine(counter);
+
+                pathIndex++;
+                counter++;
+            }
+            
+            Int64 result = steps[0];
+
+            Console.WriteLine(result);
+            for (int i = 1; i < steps.Count; i++)
+            {
+                Console.WriteLine(steps[i]);
+                result = (result / NOD(result, steps[i])) * steps[i];
+            }
+            
+            Console.WriteLine(result);
+        }
+
+        private static bool CheckNodes(List<string> nodes)
+        {
+            foreach (string node in nodes)
+            {
+                if (node[2] != 'Z')
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static Int64 NOD(Int64 first, Int64 second)
+        {
+            Int64 n = first % second;
+            first = second;
+            second = n;
+
+            if (n > 0)
+            {
+                return NOD(first, second);
+            }
+            else
+            {
+                return first;
+            }
+        }
+    }
+}

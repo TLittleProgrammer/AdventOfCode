@@ -1,0 +1,106 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Numeric;
+
+namespace ConsoleApplication4
+{
+internal class Program
+{
+public static void Main(string[] args)
+{
+Int64 sum = 0;
+string[] lines = File.ReadAllLines("input.txt");
+foreach (string str in lines)
+{
+int i = 0;
+List<int> cards = new List<int>();
+List<int> winCards = new List<int>();
+Console.WriteLine(str);
+while (str[i] != ':')
+{
+i++;
+}
+
+i++;
+int number = 0;
+while (str[i] != '|')
+{
+if (!IsDigit(str[i]))
+{
+if (number != 0)
+{
+cards.Add(number);
+number = 0;
+}
+}
+else
+{
+number = number * 10 + (str[i] - '0');
+}
+
+i++;
+}
+
+if (number != 0)
+{
+cards.Add(number);
+}
+
+i++;
+number = 0;
+
+while (i < str.Length)
+{
+if (!IsDigit(str[i]))
+{
+if (number != 0)
+{
+winCards.Add(number);
+number = 0;
+}
+}
+else
+{
+number = number * 10 + (str[i] - '0');
+}
+
+i++;
+}
+
+if (number != 0)
+{
+winCards.Add(number);
+}
+
+int winCardsCounter = 0;
+foreach (int card in winCards)
+{
+if(cards.Contains(card))
+{
+winCardsCounter++;
+}
+}
+
+if (winCardsCounter == 1)
+{
+sum++;
+}
+else
+{
+if (winCardsCounter > 1)
+{
+sum += (Int64)Math.Pow(2, winCardsCounter - 1);
+}
+}
+}
+
+Console.WriteLine(sum);
+}
+
+private static bool IsDigit(char symbol)
+{
+return symbol - '0' >= 0 && symbol - '0' <= 9;
+}
+}
+}

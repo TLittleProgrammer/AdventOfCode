@@ -1,0 +1,164 @@
+namespace ConsoleApp18
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            Int64 min = 999999999999999999;
+            Int64 lineIndex = 2;
+            int currentTargetLineIndex = 0;
+            List<string> targetLines = new List<string>()
+            {
+                "seed-to-soil map:",
+                "soil-to-fertilizer map:",
+                "fertilizer-to-water map:",
+                "water-to-light map:",
+                "light-to-temperature map:",
+                "temperature-to-humidity map:",
+                "humidity-to-location map:",
+            };
+            List<List<Int64[]>> results = new List<List<Int64[]>>();
+
+            for (int i = 0; i < 7; i++)
+            {
+                results.Add(new List<Int64[]>());
+            }
+            
+            string[] lines = File.ReadAllLines("input.txt");
+            List<(Int64, Int64)> targetSeeds = GetSeeds(lines[0]);
+            
+            while (lineIndex < lines.Length)
+            {
+                if (currentTargetLineIndex != 7 && lines[lineIndex].Contains(targetLines[currentTargetLineIndex]))
+                {
+                    currentTargetLineIndex++;
+                }
+                else
+                {
+                    if (lines[lineIndex].Length != 0)
+                    {
+                        results[currentTargetLineIndex - 1].Add(GetNumbers(lines[lineIndex]));
+                    }
+                }
+                
+                lineIndex++;
+            }
+            
+            Console.WriteLine(min);
+
+            foreach ((Int64, Int64) seed in targetSeeds)
+            {
+                for (int i = 0; i < seed.Item2; i++)
+                {
+                    Int64 index = seed.Item1 + i;
+                
+                    for (int j = 0; j < 7; j++)
+                    {
+                        foreach (Int64[] lineNumber in results[j])
+                        {
+                            if (index >= lineNumber[1] && index < lineNumber[1] + lineNumber[2])
+                            {
+                                index = lineNumber[0] + (Math.Abs(index - lineNumber[1]));
+                                break;
+                            }
+                        }
+                    }
+
+                    if (min > index)
+                    {
+                        min = index;
+                    }
+                }
+                
+                Console.WriteLine(min);
+            }
+            
+            Console.WriteLine(min);
+        }
+
+        private static Int64[] GetNumbers(string line)
+        {
+            Int64[] numbers = new Int64[3];
+            Int64 number = -1;
+            Int64 arrayIndex = 0;
+            
+            for (int index = 0; index < line.Length; index++)
+            {
+                if (IsDigit(line[index]))
+                {
+                    if (number == -1)
+                    {
+                        number = 0;
+                    }
+                    
+                    number = number * 10 + ConvertToNumber(line[index]);
+                }
+                else
+                {
+                    if (number != -1)
+                    {
+                        numbers[arrayIndex++] = number;
+                        number = -1;
+                    }
+                }
+            }
+            
+            if (number != -1)
+            {
+                numbers[arrayIndex] = number;
+            }
+            
+            return numbers;
+        }
+
+        private static List<(Int64, Int64)> GetSeeds(string line)
+        {
+            List<(Int64, Int64)> seeds = new List<(Int64, Int64)>();
+            int index = 0;
+            Int64 currentNumber = 0;
+            Int64 previousNumber = 0;
+
+            while (line[index] != ':')
+            {
+                index++;
+            }
+
+            for (; index < line.Length; index++)
+            {
+                if (IsDigit(line[index]))
+                {
+                    currentNumber = currentNumber * 10 + ConvertToNumber(line[index]);
+                }
+                else
+                {
+                    if (currentNumber != 0)
+                    {
+                        if (previousNumber != 0)
+                        {
+                            seeds.Add((previousNumber, currentNumber));
+                            previousNumber = 0;
+                            currentNumber = 0;
+                        }
+                        else
+                        {
+                            previousNumber = currentNumber;
+                            currentNumber = 0;
+                        }
+                    }
+                }
+            }
+            
+            return seeds;
+        }
+
+        private static bool IsDigit(char symbol)
+        {
+            return symbol - '0' >= 0 && symbol - '0' <= 9;
+        }
+
+        private static Int64 ConvertToNumber(char symbol)
+        {
+            return symbol - '0';
+        }
+    }
+}

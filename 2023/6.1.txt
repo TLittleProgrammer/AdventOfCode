@@ -1,0 +1,91 @@
+namespace ConsoleApp18
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            Int64 result = -1;
+
+            List<Int64> timeList = GetNumbers(lines[0]);
+            List<Int64> distanceList = GetNumbers(lines[1]);
+
+            for (int i = 0; i < timeList.Count; i++)
+            {
+                int winCounter = 0;
+                for (int j = 1; j <= timeList[i]; j++)
+                {
+                    if (distanceList[i] < j * (timeList[i] - j))
+                    {
+                        winCounter++;
+                    }
+                }
+
+                if (winCounter != 0)
+                {
+                    if (result == -1)
+                    {
+                        result = 1;
+                    }
+
+                    result *= winCounter;
+                }
+            }
+
+            if (result == -1)
+            {
+                result = 0;
+            }
+            
+            Console.WriteLine(result);
+        }
+
+        private static List<Int64> GetNumbers(string line)
+        {
+            List<Int64> list = new List<Int64>();
+
+            int index = 0;
+            Int64 number = 0;
+            
+            while (line[index] != ':')
+            {
+                index++;
+            }
+
+            index++;
+
+            for (; index < line.Length; index++)
+            {
+                if (IsDigit(line[index]))
+                {
+                    number = number * 10 + ConvertToNumber(line[index]);
+                }
+                else
+                {
+                    if (number != 0)
+                    {
+                        list.Add(number);
+                        number = 0;
+                    }
+                }
+            }
+            
+            if (number != 0)
+            {
+                list.Add(number);
+            }
+
+            return list;
+        }
+
+        private static bool IsDigit(char symbol)
+        {
+            return symbol - '0' >= 0 && symbol - '0' <= 9;
+        }
+
+        private static Int64 ConvertToNumber(char symbol)
+        {
+            return symbol - '0';
+        }
+    }
+}

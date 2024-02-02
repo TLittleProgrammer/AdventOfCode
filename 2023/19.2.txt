@@ -1,0 +1,216 @@
+namespace ConsoleApp3
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            Dictionary<string, Conditions> conditionsMap = new();
+            Fields fields = new();
+            long answer = 0;
+
+            foreach (string line in lines)
+            {
+                if(line.Length == 0) break;
+                
+                if (line[0] != '{')
+                {
+                    AddCondition(line, conditionsMap);
+                }
+            }
+
+            answer = SolveProblem(conditionsMap, answer);
+            
+            Console.WriteLine(answer);
+        }
+
+        private static void AddCondition(string line, Dictionary<string, Conditions> conditionsMap)
+        {
+            int i = 0;
+            string name = "";
+
+            while (line[i] != '{')
+            {
+                name += line[i];
+                i++;
+            }
+
+            i++;
+
+            string conditionsStr = "";
+
+            while (line[i] != '}')
+            {
+                conditionsStr += line[i];
+                i++;
+            }
+
+            string[] conditionsArray = conditionsStr.Split(',');
+
+            Conditions conditions = new Conditions();
+
+            foreach (string str in conditionsArray)
+            {
+                if (!str.Contains(':'))
+                {
+                    conditions.Add(new('x', '>', -9999, str));
+                    continue;
+                }
+
+                char symbol = str[0];
+                char equals = str[1];
+                int equalsValue = 0;
+                string result = "";
+
+                int j = 2;
+                while (IsDigit(str[j]))
+                {
+                    equalsValue = equalsValue * 10 + int.Parse(str[j].ToString());
+                    j++;
+                }
+
+                j++;
+                while (j < str.Length)
+                {
+                    result += str[j];
+                    j++;
+                }
+
+                conditions.Add(new(symbol, equals, equalsValue, result));
+            }
+
+            conditionsMap.Add(name, conditions);
+        }
+
+        private static long SolveProblem(Dictionary<string, Conditions> conditionsMap, long answer)
+        {
+
+            for (long x = 1; x <= 4000; x++)
+            {
+                for (long m = 1; m <= 4000; m++)
+                {
+                    for (long a = 1; a <= 4000; a++)
+                    {
+                        for (long s = 1; s <= 4000; s++)
+                        {
+                            Field field = new Field(x, m, a, s);
+                            
+                            string result = "in";
+
+                            while (result != "A" && result != "R")
+                            {
+                                Conditions conditions = conditionsMap[result];
+
+                                foreach (Condition condition in conditions)
+                                {
+                                    string res = condition.CheckCondition(field);
+
+                                    if (res != string.Empty)
+                                    {
+                                        result = res;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (result == "A")
+                            {
+                                foreach ((char c, long value) in field.Dictionary)
+                                {
+                                    answer += value;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return answer;
+        }
+
+        private static bool IsDigit(char c)
+        {
+            return c - '0' >= 0 && c - '0' <= 9;
+        }
+    }
+
+    public class Conditions : List<Condition>
+    {
+    }
+
+    public class Condition
+    {
+        public readonly char Symbol;
+        public readonly char Equals;
+        public readonly long EqualsValue;
+        public readonly string Result;
+
+        public Condition(char symbol, char equals, long equalsValue, string result)
+        {
+            Symbol = symbol;
+            Equals = equals;
+            EqualsValue = equalsValue;
+            Result = result;
+        }
+        
+        public string CheckCondition(Field field)
+        {
+            long value = field.Dictionary[Symbol];
+
+            if (Equals == '>')
+            {
+                if (value > EqualsValue)
+                {
+                    return Result;
+                }
+            }
+            else
+            {
+                if (value < EqualsValue)
+                {
+                    return Result;
+                }
+            }
+            
+            return string.Empty;
+        }
+
+        public string ToString()
+        {
+            return $"Symbol = {Symbol}, Equals = {Equals}, EqualsValue = {EqualsValue}, Result = {Result}";
+        }
+    }
+
+    public class Fields : List<Field>
+    {
+        
+    }
+
+    public class Field
+    {
+        public readonly Dictionary<char, long> Dictionary;
+
+        public Field(long x, long m, long a, long s)
+        {
+            Dictionary = new()
+            {
+                ['x'] = x,
+                ['m'] = m,
+                ['a'] = a,
+                ['s'] = s,
+            };
+        }
+
+        public string ToString()
+        {
+            string result = string.Empty;
+            
+            foreach ((char c, long value) in Dictionary)
+            {
+                result += $"{c} = {value}; ";
+            }
+
+            return result;
+        }
+    }
+}

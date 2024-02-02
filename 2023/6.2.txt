@@ -1,0 +1,57 @@
+namespace ConsoleApp20
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            
+            int winCounter = 0;
+            Int64 time = GetNumber(lines[0]);
+            Int64 distance = GetNumber(lines[1]);
+
+            for (int j = 1; j <= time; j++)
+            {
+                if (distance < j * (time - j))
+                {
+                    winCounter++;
+                }
+            }
+
+            Console.WriteLine(winCounter);
+        }
+
+        private static Int64 GetNumber(string line)
+        {
+            int index = 0;
+            Int64 number = 0;
+            
+            while (line[index] != ':')
+            {
+                index++;
+            }
+
+            index++;
+
+            for (; index < line.Length; index++)
+            {
+                if (IsDigit(line[index]))
+                {
+                    number = number * 10 + ConvertToNumber(line[index]);
+                }
+            }
+
+            return number;
+        }
+
+        private static bool IsDigit(char symbol)
+        {
+            return symbol - '0' >= 0 && symbol - '0' <= 9;
+        }
+
+        private static Int64 ConvertToNumber(char symbol)
+        {
+            return symbol - '0';
+        }
+    }
+}

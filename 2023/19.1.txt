@@ -1,0 +1,232 @@
+namespace ConsoleApp3
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            Dictionary<string, Conditions> conditionsMap = new();
+            Fields fields = new();
+            long answer = 0;
+
+            foreach (string line in lines)
+            {
+                if(line.Length == 0) continue;
+                
+                if (line[0] == '{')
+                {
+                    AddField(line, fields);
+                }
+                else
+                {
+                    AddCondition(line, conditionsMap);
+                }
+            }
+
+            answer = SolveProblem(fields, conditionsMap, answer);
+            
+            Console.WriteLine(answer);
+        }
+
+        private static void AddField(string line, Fields fields)
+        {
+            int currentValue = 0;
+            List<int> values = new();
+
+            for (int i = 1; i < line.Length; i++)
+            {
+                if (IsDigit(line[i]))
+                {
+                    currentValue = currentValue * 10 + (line[i] - '0');
+                }
+                else
+                {
+                    if (currentValue != 0)
+                    {
+                        values.Add(currentValue);
+                        currentValue = 0;
+                    }
+                }
+            }
+
+            fields.Add(new(values[0], values[1], values[2], values[3]));
+        }
+
+        private static void AddCondition(string line, Dictionary<string, Conditions> conditionsMap)
+        {
+            int i = 0;
+            string name = "";
+
+            while (line[i] != '{')
+            {
+                name += line[i];
+                i++;
+            }
+
+            i++;
+
+            string conditionsStr = "";
+
+            while (line[i] != '}')
+            {
+                conditionsStr += line[i];
+                i++;
+            }
+
+            string[] conditionsArray = conditionsStr.Split(',');
+
+            Conditions conditions = new Conditions();
+
+            foreach (string str in conditionsArray)
+            {
+                if (!str.Contains(':'))
+                {
+                    conditions.Add(new('x', '>', -9999, str));
+                    continue;
+                }
+
+                char symbol = str[0];
+                char equals = str[1];
+                int equalsValue = 0;
+                string result = "";
+
+                int j = 2;
+                while (IsDigit(str[j]))
+                {
+                    equalsValue = equalsValue * 10 + int.Parse(str[j].ToString());
+                    j++;
+                }
+
+                j++;
+                while (j < str.Length)
+                {
+                    result += str[j];
+                    j++;
+                }
+
+                conditions.Add(new(symbol, equals, equalsValue, result));
+            }
+
+            conditionsMap.Add(name, conditions);
+        }
+
+        private static long SolveProblem(Fields fields, Dictionary<string, Conditions> conditionsMap, long answer)
+        {
+            foreach (Field field in fields)
+            {
+                string result = "in";
+
+                while (result != "A" && result != "R")
+                {
+                    Conditions conditions = conditionsMap[result];
+
+                    foreach (Condition condition in conditions)
+                    {
+                        string res = condition.CheckCondition(field);
+
+                        if (res != string.Empty)
+                        {
+                            result = res;
+                            break;
+                        }
+                    }
+                }
+
+                if (result == "A")
+                {
+                    foreach ((char c, long value) in field.Dictionary)
+                    {
+                        answer += value;
+                    }
+                }
+            }
+
+            return answer;
+        }
+
+        private static bool IsDigit(char c)
+        {
+            return c - '0' >= 0 && c - '0' <= 9;
+        }
+    }
+
+    public class Conditions : List<Condition>
+    {
+    }
+
+    public class Condition
+    {
+        public readonly char Symbol;
+        public readonly char Equals;
+        public readonly long EqualsValue;
+        public readonly string Result;
+
+        public Condition(char symbol, char equals, long equalsValue, string result)
+        {
+            Symbol = symbol;
+            Equals = equals;
+            EqualsValue = equalsValue;
+            Result = result;
+        }
+        
+        public string CheckCondition(Field field)
+        {
+            long value = field.Dictionary[Symbol];
+
+            if (Equals == '>')
+            {
+                if (value > EqualsValue)
+                {
+                    return Result;
+                }
+            }
+            else
+            {
+                if (value < EqualsValue)
+                {
+                    return Result;
+                }
+            }
+            
+            return string.Empty;
+        }
+
+        public string ToString()
+        {
+            return $"Symbol = {Symbol}, Equals = {Equals}, EqualsValue = {EqualsValue}, Result = {Result}";
+        }
+    }
+
+    public class Fields : List<Field>
+    {
+        
+    }
+
+    public class Field
+    {
+        public readonly Dictionary<char, long> Dictionary;
+
+        public Field(long x, long m, long a, long s)
+        {
+            Dictionary = new()
+            {
+                ['x'] = x,
+                ['m'] = m,
+                ['a'] = a,
+                ['s'] = s,
+            };
+        }
+
+        public string ToString()
+        {
+            string result = string.Empty;
+            
+            foreach ((char c, long value) in Dictionary)
+            {
+                result += $"{c} = {value}; ";
+            }
+
+            return result;
+        }
+    }
+}

@@ -1,0 +1,109 @@
+namespace ConsoleApp3
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            List<int> matrix = new();
+            List<Point> points = new List<Point>();
+
+            long minX = 0;
+            long maxX = 0;
+            long maxY = 0;
+            long minY = 0;
+            long perimetr = 0;
+
+            points.Add(new Point(0, 0));
+            
+            foreach (string line in lines)
+            {
+                string[] arr = line.Split(' ');
+
+                string symbol = "";
+
+                switch (arr[2][^2])
+                {
+                    case '0': arr[0] = "R"; break;
+                    case '1': arr[0] = "D"; break;
+                    case '2': arr[0] = "L"; break;
+                    case '3': arr[0] = "U"; break;
+                }
+
+                string hex = "";
+
+                for (int i = 2; i < arr[2].Length - 2; i++)
+                {
+                    hex += arr[2][i];
+                }
+
+                arr[1] = Convert.ToInt64(hex, 16).ToString();
+                switch (arr[0])
+                {
+                    case "R": points.Add(new Point(points[^1].X + int.Parse(arr[1]), points[^1].Y)); break;
+                    case "L": points.Add(new Point(points[^1].X - int.Parse(arr[1]), points[^1].Y)); break;
+                    case "U": points.Add(new Point(points[^1].X, points[^1].Y - int.Parse(arr[1]))); break;
+                    case "D": points.Add(new Point(points[^1].X, points[^1].Y + int.Parse(arr[1]))); break;
+                }
+
+                perimetr += int.Parse(arr[1]);
+
+                Point point = points[^1];
+
+                if (minX > point.X)
+                {
+                    minX = point.X;
+                }
+                else
+                {
+                    if (maxX < point.X)
+                    {
+                        maxX = point.X;
+                    }
+                }
+                if (minY > point.Y)
+                {
+                    minY = point.Y;
+                }
+                else
+                {
+                    if (maxY < point.Y)
+                    {
+                        maxY = point.Y;
+                    }
+                }
+            }
+            
+            long A = GetA(points);
+            Console.WriteLine(A + perimetr / 2 + 1);
+        }
+
+        private static long GetA(List<Point> points)
+        {
+            long answer = 0;
+
+            Console.WriteLine(points.Count);
+            for (int i = 1; i < points.Count; i++)
+            {
+                answer += (points[i - 1].X * points[i].Y - points[i - 1].Y * points[i].X);
+            }
+            
+            answer += (points[^1].X * points[0].Y - points[^1].Y * points[0].X);
+
+
+            return answer / 2;
+        }
+    }
+
+    public class Point
+    {
+        public long X;
+        public long Y;
+
+        public Point(long x, long y)
+        {
+            X = x;
+            Y = y;
+        }
+    }
+}

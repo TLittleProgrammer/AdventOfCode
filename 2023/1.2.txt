@@ -1,0 +1,92 @@
+namespace ConsoleApp11
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            Dictionary<string, Int64> numbers = new()
+            {
+                ["one"] = 1,
+                ["two"] = 2,
+                ["three"] = 3,
+                ["four"] = 4,
+                ["five"] = 5,
+                ["six"] = 6,
+                ["seven"] = 7,
+                ["eight"] = 8,
+                ["nine"] = 9,
+            };
+            Int64 sum = 0;
+            string[] lines = File.ReadAllLines("input.txt");
+            foreach (string str in lines)
+            {
+                string substring = "";
+                Int64 firstValue = -1;
+                Int64 secondValue = -1;
+                for (int i = 0; i < str.Length; i++)
+                {
+                    if (str[i] - '0' >= 0 && str[i] - '0' <= 9)
+                    {
+                        substring = "";
+                        if (firstValue == -1)
+                        {
+                            firstValue = str[i] - '0';
+                        }
+                        else
+                        {
+                            secondValue = str[i] - '0';
+                        }
+                    }
+                    else
+                    {
+                        Int64 result = -1;
+                        substring += str[i];
+                        
+                        string garbageString = "";
+                        for (int j = 0; j < substring.Length; j++)
+                        {
+                            garbageString = "";
+                            for (int k = j; k < substring.Length; k++)
+                            {
+                                garbageString += substring[k];
+                                foreach ((string stringNumber, Int64 value) in numbers)
+                                {
+                                    if (garbageString.Contains(stringNumber))
+                                    {
+                                        result = value;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (result != -1)
+                        {
+                            if (firstValue == -1)
+                            {
+                                firstValue = result;
+                            }
+                            else
+                            {
+                                secondValue = result;
+                            }
+                        }
+                    }
+                }
+
+                if (secondValue != -1)
+                {
+                    sum += (firstValue * 10 + secondValue);
+                }
+                else
+                {
+                    sum += (firstValue * 10 + firstValue);
+                }
+                Console.WriteLine($"first = {firstValue}");
+                Console.WriteLine($"second = {secondValue}");
+            }
+
+            Console.WriteLine(sum);
+        }
+    }
+}

@@ -1,0 +1,138 @@
+namespace ConsoleApp3
+{
+    internal class Program
+    {
+        public static List<List<int>> Map = new();
+
+        public static int Columns => Map[0].Count; 
+        public static int Rows => Map.Count; 
+        
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            
+            foreach (string line in lines)
+            {
+                List<int> row = line.Select(c => int.Parse(c.ToString())).ToList();
+                Map.Add(row);
+            }
+
+            PriorityQueue<Path, int> queue = new();
+            HashSet<string> visited = new();
+            int resultCost = 0;
+
+            queue.Enqueue(new Path(new(0, 0), Direction.Right, 0), 0);
+            queue.Enqueue(new Path(new(0, 0), Direction.Down, 0), 0);
+
+            while (queue.Count > 0)
+            {
+                Path path = queue.Dequeue();
+                if (path.Position.X == Map.Count - 1 && path.Position.Y == Map[0].Count - 1 && path.StepsCounter >= 4)
+                {
+                    resultCost = path.Cost;
+                    break;
+                }
+
+                if (path.StepsCounter < 10)
+                {
+                    TryMove(path, path.Direction, Map, visited, queue);
+                }
+
+                if (path.StepsCounter >= 4)
+                {
+                    TryMove(path, path.Direction.TurnLeft(), Map, visited, queue);
+                    TryMove(path, path.Direction.TurnRight(), Map, visited, queue);
+                }
+            }
+
+            Console.WriteLine($"{resultCost}");
+        }
+
+
+        static void TryMove(Path path, Direction direction, List<List<int>> map, HashSet<string> visited, PriorityQueue<Path, int> queue)
+        {
+            Path targetPath = new Path(path.Position.Move(direction), direction, direction == path.Direction ? path.StepsCounter + 1 : 1);
+
+            if (!IsValid(targetPath.Position))
+            {
+                return;
+            }
+
+            string key = $"{targetPath.Position.X},{targetPath.Position.Y},{targetPath.Direction.Row},{targetPath.Direction.Column},{targetPath.StepsCounter}";
+            if (visited.Contains(key))
+            {
+                return;
+            }
+
+            visited.Add(key);
+
+            targetPath.Cost = path.Cost + map[targetPath.Position.X][targetPath.Position.Y];
+            queue.Enqueue(targetPath, targetPath.Cost);
+        }
+
+        private sealed class Path
+        {
+            public readonly Position Position;
+            public readonly Direction Direction;
+            public readonly int StepsCounter;
+
+            public Path(Position position, Direction direction, int stepsCounter)
+            {
+                Position = position;
+                Direction = direction;
+                StepsCounter = stepsCounter;
+            }
+             
+            public int Cost { get; set; }
+        }
+
+        public sealed class Direction
+        {
+            public static Direction Up = new(-1, 0);
+            public static Direction Down = new(1, 0);
+            public static Direction Left = new(0, -1);
+            public static Direction Right = new(0, 1);
+            
+            public readonly int Row;
+            public readonly int Column;
+
+            public Direction(int row, int column)
+            {
+                Row = row;
+                Column = column;
+            }
+
+            public Direction TurnLeft()
+            {
+                return new Direction(-Column, Row);
+            }
+
+            public Direction TurnRight()
+            {
+                return new Direction(Column, -Row);
+            }
+        }
+
+        public sealed class Position
+        {
+            public readonly int X;
+            public readonly int Y;
+
+            public Position(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+
+            public Position Move(Direction direction)
+            {
+                return new Position(X + direction.Row, Y + direction.Column);
+            }
+        }
+
+        public static bool IsValid(Position position)
+        {
+            return position.X >= 0 && position.X < Columns && position.Y >= 0 && position.Y < Rows;
+        }
+    }
+}

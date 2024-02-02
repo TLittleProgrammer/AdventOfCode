@@ -1,0 +1,46 @@
+using System;
+using System.IO;
+using System.Numeric;
+
+namespace ConsoleApplication4
+{
+internal class Program
+{
+public static void Main(string[] args)
+{
+Int64 sum = 0;
+string[] lines = File.ReadAllLines("input.txt");
+foreach (string str in lines)
+{
+Int64 firstValue = -1;
+Int64 secondValue = -1;
+bool firstIsEnd = false;
+for (int i = 0; i < str.Length; i++)
+{
+if ((str[i] - '0') >= 0 && (str[i] - '0') <= 9)
+{
+if (firstValue == -1)
+{
+firstValue = (str[i] - '0');
+}
+else
+{
+secondValue = (str[i] - '0');
+}
+}
+}
+
+if (secondValue != -1)
+{
+sum += (firstValue * 10 + secondValue);
+}
+else
+{
+sum += (firstValue * 10 + firstValue);
+}
+}
+
+Console.WriteLine(sum);
+}
+}
+}

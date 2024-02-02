@@ -1,0 +1,133 @@
+namespace ConsoleApp2
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            List<List<string>> mirrors = GetMirrors(lines);
+            Int64 result = 0;
+            
+            foreach (List<string> mirror in mirrors)
+            {
+                result += Count(mirror);
+            }
+
+            Console.WriteLine(result);
+        }
+
+        private static Int64 Count(List<string> mirror)
+        {
+            int result = TryVerticalMirror(mirror);
+            if (result != -1)
+            {
+                return result;
+            }
+            
+            return TryHorizontalMirror(mirror) * 100;
+        }
+
+        private static int TryVerticalMirror(List<string> mirror)
+        {
+            int result = -1;
+            for (int leftColumnIndex = 0; leftColumnIndex < mirror[0].Length - 1; leftColumnIndex++)
+            {
+                int left = leftColumnIndex;
+                int right = leftColumnIndex + 1;
+                bool isMirrored = true;
+
+                while (isMirrored)
+                {
+                    for (int i = 0; i < mirror.Count; i++)
+                    {
+                        if (mirror[i][left] != mirror[i][right])
+                        {
+                            isMirrored = false;
+                            break;
+                        }
+                    }
+
+                    left--;
+                    right++;
+                    
+                    if (left < 0 || right >= mirror[0].Length)
+                    {
+                        break;
+                    }
+                }
+
+                if (isMirrored)
+                {
+                    result = leftColumnIndex + 1;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        private static Int64 TryHorizontalMirror(List<string> mirror)
+        {
+            int result = -1;
+            for (int topRowIndex = 0; topRowIndex < mirror.Count - 1; topRowIndex++)
+            {
+                int top = topRowIndex;
+                int bottom = topRowIndex + 1;
+                bool isMirrored = true;
+
+                while (isMirrored)
+                {
+                    for (int i = 0; i < mirror[0].Length; i++)
+                    {
+                        if (mirror[top][i] != mirror[bottom][i])
+                        {
+                            isMirrored = false;
+                            break;
+                        }
+                    }
+                    
+                    top--;
+                    bottom++;
+                    
+                    if (top < 0 || bottom >= mirror.Count)
+                    {
+                        break;
+                    }
+                }
+
+                if (isMirrored)
+                {
+                    result = topRowIndex + 1;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        private static List<List<string>> GetMirrors(string[] lines)
+        {
+            List<List<string>> mirrors = new();
+            List<string> mirror = new();
+            foreach (string line in lines)
+            {
+                if (line.Length == 0)
+                {
+                    mirrors.Add(mirror);
+                    mirror = new();
+                }
+                else
+                {
+                    mirror.Add(line);
+                }
+            }
+
+            if (mirror.Count != 0)
+            {
+                mirrors.Add(mirror);
+            }
+
+            return mirrors;
+        }
+    }
+}

@@ -1,0 +1,143 @@
+namespace ConsoleApp18
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            Int64 max = 0;
+            int x = -1, y = -1;
+            
+            string[] lines = File.ReadAllLines("input.txt");
+
+            List<char> dotsList = new List<char>();
+            List<List<char>> matrix = new List<List<char>>();
+            List<List<Int64>> weightsMatrix = new List<List<Int64>>();
+
+            for (int i = 0; i < lines[0].Length + 2; i++)
+            {
+                dotsList.Add('.');
+            }
+            
+            matrix.Add(dotsList);
+            int lineCounter = -1;
+            foreach (string line in lines)
+            {
+                int posX = -1;
+                List<char> lineList = new List<char>();
+
+                lineCounter++;
+                
+                lineList.Add('.');
+                foreach (char symbol in line)
+                {
+                    posX++;
+                    lineList.Add(symbol);
+                    if (symbol == 'S')
+                    {
+                        y = lineCounter;
+                        x = posX;
+                    }
+                }
+                lineList.Add('.');
+                matrix.Add(lineList);
+            }
+            
+            matrix.Add(dotsList);
+
+            foreach (List<char> list in matrix)
+            {
+                List<Int64> line = new List<Int64>();
+                for (int i = 0; i < list.Count + 2; i++)
+                {
+                    line.Add(9999999999999);
+                }
+                weightsMatrix.Add(line);
+            }
+
+            DFS(matrix, weightsMatrix, ref max, x + 1, y + 1);
+
+            Console.WriteLine(max);
+        }
+
+        private static void DFS(List<List<char>> matrix, List<List<Int64>> weightsMatrix, ref Int64 max, int x, int y)
+        {
+            Queue<(int, int)> stepQueue = new();
+
+            stepQueue.Enqueue((x, y));
+            weightsMatrix[y][x] = 0;
+            max = 0;
+
+            while (stepQueue.Count != 0)
+            {
+                (int, int) position = stepQueue.Dequeue();
+
+                var steps= GoStep(position.Item1, position.Item2, matrix[position.Item2][position.Item1], matrix);
+
+                foreach ((int, int) step in steps)
+                {
+                    if (matrix[step.Item2][step.Item1] != '.')
+                    {
+                        if (weightsMatrix[position.Item2][position.Item1] + 1 < weightsMatrix[step.Item2][step.Item1])
+                        {
+                            stepQueue.Enqueue((step.Item1, step.Item2));
+                            weightsMatrix[step.Item2][step.Item1] = weightsMatrix[position.Item2][position.Item1] + 1;
+
+                            if (max < weightsMatrix[step.Item2][step.Item1])
+                            {
+                                max = weightsMatrix[step.Item2][step.Item1];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        private static List<(int, int)> GoStep(int x, int y, char symbol, List<List<char>> matrix)
+        {
+            List<(int, int)> result = new();
+
+            switch (symbol)
+            {
+                case 'S':
+                {
+                    if(matrix[y - 1][x] == '|' || matrix[y - 1][x] == '7'|| matrix[y - 1][x] == 'F') result.Add((x, y - 1));
+                    if(matrix[y][x + 1] == '-' || matrix[y][x + 1] == '7'|| matrix[y][x + 1] == 'J') result.Add((x + 1, y));
+                    if(matrix[y + 1][x] == '|' || matrix[y + 1][x] == 'L' || matrix[y + 1][x] == 'J') result.Add((x, y + 1));
+                    if(matrix[y][x - 1] == '-' || matrix[y][x - 1] == 'L'|| matrix[y][x - 1] == 'F') result.Add((x - 1, y));
+                } break;
+                case '-':
+                {
+                    if(matrix[y][x - 1] == '-' || matrix[y][x - 1] == 'L'|| matrix[y][x - 1] == 'F') result.Add((x - 1, y));
+                    if(matrix[y][x + 1] == '-' || matrix[y][x + 1] == '7'|| matrix[y][x + 1] == 'J') result.Add((x + 1, y));
+                } break;
+                case '|':
+                {
+                    if(matrix[y - 1][x] == '|' || matrix[y - 1][x] == '7'|| matrix[y - 1][x] == 'F') result.Add((x, y - 1));
+                    if(matrix[y + 1][x] == '|' || matrix[y + 1][x] == 'L' || matrix[y + 1][x] == 'J') result.Add((x, y + 1));
+                } break;
+                case '7':
+                {
+                    if(matrix[y][x - 1] == '-' || matrix[y][x - 1] == 'L'|| matrix[y][x - 1] == 'F') result.Add((x - 1, y));
+                    if(matrix[y + 1][x] == '|' || matrix[y + 1][x] == 'L' || matrix[y + 1][x] == 'J') result.Add((x, y + 1));
+                } break;
+                case 'J':
+                {
+                    if(matrix[y][x - 1] == '-' || matrix[y][x - 1] == 'L'|| matrix[y][x - 1] == 'F') result.Add((x - 1, y));
+                    if(matrix[y - 1][x] == '|' || matrix[y - 1][x] == '7'|| matrix[y - 1][x] == 'F') result.Add((x, y - 1));
+                } break;
+                case 'L':
+                {
+                    if(matrix[y][x + 1] == '-' || matrix[y][x + 1] == '7'|| matrix[y][x + 1] == 'J') result.Add((x + 1, y));
+                    if(matrix[y - 1][x] == '|' || matrix[y - 1][x] == '7'|| matrix[y - 1][x] == 'F') result.Add((x, y - 1));
+                } break;
+                case 'F':
+                {
+                    if(matrix[y][x + 1] == '-' || matrix[y][x + 1] == '7'|| matrix[y][x + 1] == 'J') result.Add((x + 1, y));
+                    if(matrix[y + 1][x] == '|' || matrix[y + 1][x] == 'L' || matrix[y + 1][x] == 'J') result.Add((x, y + 1));
+                } break;
+            }
+            
+            return result;
+        }
+    }
+}

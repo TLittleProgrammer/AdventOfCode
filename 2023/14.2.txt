@@ -1,0 +1,133 @@
+using System.Text;
+
+namespace ConsoleApp3
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            List<StringBuilder> matrix = new();
+            int lineLength = lines[0].Length;
+
+            foreach (string line in lines)
+            {
+                matrix.Add(new StringBuilder(line));
+            }
+
+            Rotate(lineLength, matrix);
+
+            Console.WriteLine(GetWeight(lineLength, matrix));
+        }
+
+        private static void Rotate(int lineLength, List<StringBuilder> matrix, int index = 1000)
+        {
+            for (int i = 0; i < index; i++)
+            {
+                ToNourth(matrix, lineLength);
+                ToWest(matrix, lineLength);
+                ToSouth(matrix, lineLength);
+                ToEast(matrix, lineLength);
+            }
+        }
+
+        private static void ToEast(List<StringBuilder> matrix, int lineLength)
+        {
+            for (int row = 0; row < matrix.Count; row++)
+            {
+                for (int column = lineLength - 2; column >= 0; column--)
+                {
+                    int nColumn = column;
+                    while (matrix[row][nColumn] == 'O' && matrix[row][nColumn + 1] == '.')
+                    {
+                        (matrix[row][nColumn], matrix[row][nColumn + 1]) = (matrix[row][nColumn + 1], matrix[row][nColumn]);
+                        nColumn++;
+                        if (nColumn > lineLength - 2)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void ToSouth(List<StringBuilder> matrix, int lineLength)
+        {
+            for (int column = 0; column < lineLength; column++)
+            {
+                for (int row = matrix.Count - 2; row >= 0; row--)
+                {
+                    int nRow = row;
+                    while (matrix[nRow][column] == 'O' && matrix[nRow + 1][column] == '.')
+                    {
+                        (matrix[nRow][column], matrix[nRow + 1][column]) = (matrix[nRow + 1][column], matrix[nRow][column]);
+                        nRow++;
+                        if (nRow > matrix.Count - 2)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void ToWest(List<StringBuilder> matrix, int lineLength)
+        {
+            for (int row = 0; row < matrix.Count; row++)
+            {
+                for (int column = 1; column < lineLength; column++)
+                {
+                    int nColumn = column;
+                    while (matrix[row][nColumn] == 'O' && matrix[row][nColumn - 1] == '.')
+                    {
+                        (matrix[row][nColumn], matrix[row][nColumn - 1]) = (matrix[row][nColumn - 1], matrix[row][nColumn]);
+                        nColumn--;
+                        
+                        if (nColumn < 1)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void ToNourth(List<StringBuilder> matrix, int lineLength)
+        {
+            for (int column = 0; column < lineLength; column++)
+            {
+                for (int row = 1; row < matrix.Count; row++)
+                {
+                    int nRow = row;
+                    while (matrix[nRow][column] == 'O' && matrix[nRow - 1][column] == '.')
+                    {
+                        (matrix[nRow][column], matrix[nRow - 1][column]) = (matrix[nRow - 1][column], matrix[nRow][column]);
+                        nRow--;
+
+                        if (nRow < 1)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static long GetWeight(int lineLength, List<StringBuilder> matrix)
+        {
+            Int64 result = 0;
+            for (int i = 0; i < lineLength; i++)
+            {
+                for (int j = 0; j < matrix.Count; j++)
+                {
+                    if (matrix[j][i] == 'O')
+                    {
+                        result += matrix.Count - j;
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
+}

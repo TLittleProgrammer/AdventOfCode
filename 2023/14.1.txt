@@ -1,0 +1,41 @@
+namespace ConsoleApp2
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            List<string> matrix = new();
+            int lineLength = lines[0].Length;
+            Int64 result = 0;
+            
+            foreach (string line in lines)
+            {
+                matrix.Add(line);
+            }
+
+            for (int i = 0; i < lineLength; i++)
+            {
+                int currentWeight = matrix.Count;
+                for (int j = 0; j < matrix.Count; j++)
+                {
+                    if (matrix[j][i] == '#')
+                    {
+                        currentWeight = matrix.Count - j - 1;
+                    }
+                    else
+                    {
+                        if (matrix[j][i] == 'O')
+                        {
+                            Console.WriteLine($"row = {j}; column = {i}; weight = {currentWeight}");
+                            result += currentWeight;
+                            currentWeight--;
+                        }
+                    }
+                }
+            }
+            
+            Console.WriteLine(result);
+        }
+    }
+}

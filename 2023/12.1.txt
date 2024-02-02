@@ -1,0 +1,86 @@
+using System.Net.Sockets;
+
+namespace ConsoleApp2
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            int result = 0;
+
+            foreach (string line in lines)
+            {
+                string[] splittedLine = line.Split(" ");
+
+                string groups = splittedLine[0];
+                int[] numbers = splittedLine[1].Split(",").Select(int.Parse).ToArray();
+
+                result += Count((groups, numbers), 5);
+            }
+
+            Console.WriteLine(result);
+        }
+        private static int Count((string groups, int[] numbers) line, int copiesNumber)
+        {
+            string newGroupLine = CreateNewString(line, copiesNumber);
+            int[] newNumbersArray = CreateNewNumbers(line, copiesNumber);
+            
+            return Count(newGroupLine, newNumbersArray, new());
+        }
+
+        private static int Count(string groupsLine, int[] numbersArray, Dictionary<int, int> counts, int key = 0)
+        {
+            if (counts.TryGetValue(key, out int count))
+            {
+                return count;
+            }
+
+            if (numbersArray.Length == 0)
+            {
+                counts[key] = groupsLine.Any(symbol => symbol == '#') ? 0 : 1;
+                return counts[key];
+            }
+
+            int firstNumber = numbersArray[0];
+            int max = groupsLine.Length - numbersArray.Length - Math.Max(firstNumber, numbersArray.Sum() - 1);
+            int k = groupsLine[..firstNumber].Count(symbol => symbol != '.');
+            
+            for (int first = 0, last = firstNumber; first <= max; )
+            {
+                char firstSymbol = groupsLine[first++];
+                char secondSymbol = groupsLine[last++];
+                
+                if (k == firstNumber && secondSymbol != '#')
+                {
+                    count += Count(groupsLine[last..], numbersArray[1..], counts, key + last * 32 + 1);
+                }
+
+                if (firstSymbol == '#')
+                {
+                    return counts[key] = count;
+                }
+
+                k += (secondSymbol == '.' ? 0 : 1) - (firstSymbol == '.' ? 0 : 1);
+            }
+
+            if (k == firstNumber && numbersArray.Length == 1)
+            {
+                count++;
+            }
+
+            counts[key] = count;
+            return count;
+        }
+
+        private static int[] CreateNewNumbers((string groups, int[] numbers) line, int copiesNumber)
+        {
+            return Enumerable.Repeat(line.numbers, copiesNumber).SelectMany(numbers => numbers).ToArray();
+        }
+
+        private static string CreateNewString((string groups, int[] numbers) line, int copiesNumber)
+        {
+            return string.Join('?', Enumerable.Repeat(line.groups, copiesNumber));
+        }
+    }
+}

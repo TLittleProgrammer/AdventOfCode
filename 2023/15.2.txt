@@ -1,0 +1,116 @@
+namespace ConsoleApp3
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            Dictionary<int, List<Box>> dictionary = new();
+
+            foreach (string line in lines)
+            {
+                foreach (string str in line.Split(','))
+                {
+                    string boxLine = "";
+
+                    int i = 0;
+                    while (str[i] >= 'a' && str[i] <= 'z')
+                    {
+                        boxLine += str[i];
+                        i++;
+                    }
+
+                    i++;
+                    int number = 0;
+                    
+                    while (i < str.Length)
+                    {
+                        number = number * 10 + (str[i] - '0');
+                        i++;
+                    }
+
+                    Box box = new Box(boxLine, number);
+                    int hash = CountHash(box.BoxLine);
+                    
+                    if (str.Contains('-'))
+                    {
+                        if (dictionary.ContainsKey(hash))
+                        {
+                            for (int j = 0; j < dictionary[hash].Count; j++)
+                            {
+                                if (dictionary[hash][j].BoxLine.Equals(box.BoxLine))
+                                {
+                                    dictionary[hash].RemoveAt(j);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (dictionary.ContainsKey(hash))
+                        {
+                            bool has = false;
+                            for (int j = 0; j < dictionary[hash].Count; j++)
+                            {
+                                if (dictionary[hash][j].BoxLine.Equals(box.BoxLine))
+                                {
+                                    has = true;
+                                    dictionary[hash][j].Power = box.Power;
+                                }
+                            }
+
+                            if (!has)
+                            {
+                                dictionary[hash].Add(box);
+                            }
+                        }
+                        else
+                        {
+                            dictionary.Add(hash, new List<Box> { box });
+                        }
+                    }
+                }
+            }
+            
+            Int64 result = 0;
+
+            foreach ((int boxNumber, List<Box> boxes) in dictionary)
+            {
+                int slotNumber = 1;
+                foreach (Box box in boxes)
+                {
+                    result += ((boxNumber + 1) * slotNumber++ * box.Power);
+                }
+            }
+
+
+            Console.WriteLine(result);
+        }
+
+        private static int CountHash(string str)
+        {
+            int hash = 0;
+            
+            for (int i = 0; i < str.Length; i++)
+            {
+                hash += (int)str[i];
+                hash *= 17;
+                hash %= 256;
+            }
+            
+            return hash;
+        }
+    }
+
+    public class Box
+    {
+        public string BoxLine;
+        public int Power;
+
+        public Box(string boxLine, int number)
+        {
+            BoxLine = boxLine;
+            Power = number;
+        }
+    }
+}

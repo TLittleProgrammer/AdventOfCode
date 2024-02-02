@@ -1,0 +1,92 @@
+namespace ConsoleApp1
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            List<string> matrix = new();
+            string[] lines = File.ReadAllLines("input.txt");
+
+            foreach (string line in lines)
+            {
+                bool doesNotHaveGalactices = true;
+                foreach (char c in line)
+                {
+                    if (c == '#')
+                    {
+                        doesNotHaveGalactices = false;
+                        break;
+                    }
+                }
+
+                if (doesNotHaveGalactices)
+                {
+                    matrix.Add(line);
+                    matrix.Add(line);
+                }
+                else
+                {
+                    matrix.Add(line);
+                }
+            }
+
+            for (int i = 0; i < matrix[0].Length; i++)
+            {
+                bool doesNotHaveGalactices = true;
+                foreach (string str in matrix)
+                {
+                    if (str[i] == '#')
+                    {
+                        doesNotHaveGalactices = false;
+                        break;
+                    }
+                }
+
+                if (doesNotHaveGalactices)
+                {
+                    for (int j = 0; j < matrix.Count; j++)
+                    {
+                        matrix[j] = matrix[j].Insert(i, ".");
+                    }
+
+                    i++;
+                }
+            }
+
+            foreach (string s in matrix)
+            {
+                foreach (char c in s)
+                {
+                    Console.Write(c);
+                }
+                Console.WriteLine();
+            }
+
+            List<(int, int)> coordinates = new();
+
+            for (int i = 0; i < matrix.Count; i++)
+            {
+                for (int j = 0; j < matrix[i].Length; j++)
+                {
+                    if (matrix[i][j] == '#')
+                    {
+                        coordinates.Add((i + 1, j + 1));
+                    }
+                }
+            }
+
+            int result = 0;
+            
+
+            for (int i = 0; i < coordinates.Count - 1; i++)
+            {
+                for (int j = i + 1; j < coordinates.Count; j++)
+                {
+                    result += Math.Abs(coordinates[i].Item1 - coordinates[j].Item1) + Math.Abs(coordinates[i].Item2 - coordinates[j].Item2);
+                }
+            }
+            
+            Console.WriteLine(result);
+        }
+    }
+}

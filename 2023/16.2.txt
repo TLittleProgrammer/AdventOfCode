@@ -1,0 +1,303 @@
+using System.Text;
+
+namespace ConsoleApp3
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            List<string> matrix = new();
+            long max = -9999999999999999;
+
+            foreach (string line in lines)
+            {
+                matrix.Add(line);
+            }
+
+            for (int i = 0; i < lines[0].Length; i++)
+            {
+                List<StringBuilder> list = new();
+                List<List<bool>> isVisited = new();
+                
+                foreach (string line in lines)
+                {
+                    list.Add(new StringBuilder(line));
+                    List<bool> visited = new List<bool>();
+                    for (int j = 0; j < line.Length; j++)
+                    {
+                        visited.Add(false);
+                    }
+                    isVisited.Add(visited);
+                }
+                
+                long answer = GetAnswer(lines, list, matrix, isVisited, new Ray(i, 0, Direction.Bottom));
+                if (max < answer)
+                {
+                    max = answer;
+                }
+            }
+
+            for (int i = 0; i < lines[0].Length; i++)
+            {
+                List<StringBuilder> list = new();
+                List<List<bool>> isVisited = new();
+                
+                foreach (string line in lines)
+                {
+                    list.Add(new StringBuilder(line));
+                    List<bool> visited = new List<bool>();
+                    for (int j = 0; j < line.Length; j++)
+                    {
+                        visited.Add(false);
+                    }
+                    isVisited.Add(visited);
+                }
+                
+                long answer = GetAnswer(lines, list, matrix, isVisited, new Ray(i, lines.Length - 1, Direction.Up));
+                if (max < answer)
+                {
+                    max = answer;
+                }
+            }
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                List<StringBuilder> list = new();
+                List<List<bool>> isVisited = new();
+                
+                foreach (string line in lines)
+                {
+                    list.Add(new StringBuilder(line));
+                    List<bool> visited = new List<bool>();
+                    for (int j = 0; j < line.Length; j++)
+                    {
+                        visited.Add(false);
+                    }
+                    isVisited.Add(visited);
+                }
+                
+                long answer = GetAnswer(lines, list, matrix, isVisited, new Ray(0, i, Direction.Right));
+                if (max < answer)
+                {
+                    max = answer;
+                }
+            }
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                List<StringBuilder> list = new();
+                List<List<bool>> isVisited = new();
+                
+                foreach (string line in lines)
+                {
+                    list.Add(new StringBuilder(line));
+                    List<bool> visited = new List<bool>();
+                    for (int j = 0; j < line.Length; j++)
+                    {
+                        visited.Add(false);
+                    }
+                    isVisited.Add(visited);
+                }
+                
+                long answer = GetAnswer(lines, list, matrix, isVisited, new Ray(lines[0].Length - 1, i, Direction.Left));
+                if (max < answer)
+                {
+                    max = answer;
+                }
+            }
+            
+            Console.WriteLine(max);
+        }
+
+        private static long GetAnswer(string[] lines, List<StringBuilder> result, List<string> matrix, List<List<bool>> isVisited, Ray firstRay)
+        {
+            Queue<Ray> rays = new();
+            rays.Enqueue(firstRay);
+
+            while (rays.Count != 0)
+            {
+                Ray ray = rays.Dequeue();
+
+                if (ray.Position.X < 0 || ray.Position.X >= lines[0].Length || ray.Position.Y < 0 ||
+                    ray.Position.Y >= lines.Length)
+                {
+                    continue;
+                }
+
+                result[ray.Position.Y][ray.Position.X] = '#';
+
+                switch (matrix[ray.Position.Y][ray.Position.X])
+                {
+                    case '|':
+                    {
+                        if (ray.Direction == Direction.Left || ray.Direction == Direction.Right)
+                        {
+                            if (isVisited[ray.Position.Y][ray.Position.X] == false)
+                            {
+                                isVisited[ray.Position.Y][ray.Position.X] = true;
+
+                                rays.Enqueue(new Ray(ray.Position.X, ray.Position.Y, Direction.Up));
+                                rays.Enqueue(new Ray(ray.Position.X, ray.Position.Y, Direction.Bottom));
+                            }
+                        }
+                        else
+                        {
+                            ray = GoStep(ray);
+                            rays.Enqueue(ray);
+                        }
+                    }
+                        break;
+                    case '-':
+                    {
+                        if (ray.Direction == Direction.Up || ray.Direction == Direction.Bottom)
+                        {
+                            if (isVisited[ray.Position.Y][ray.Position.X] == false)
+                            {
+                                isVisited[ray.Position.Y][ray.Position.X] = true;
+
+                                rays.Enqueue(new Ray(ray.Position.X, ray.Position.Y, Direction.Left));
+                                rays.Enqueue(new Ray(ray.Position.X, ray.Position.Y, Direction.Right));
+                            }
+                        }
+                        else
+                        {
+                            ray = GoStep(ray);
+                            rays.Enqueue(ray);
+                        }
+                    }
+                        break;
+                    case '/':
+                    {
+                        switch (ray.Direction)
+                        {
+                            case Direction.Up:
+                                ray.Direction = Direction.Right;
+                                break;
+                            case Direction.Right:
+                                ray.Direction = Direction.Up;
+                                break;
+                            case Direction.Bottom:
+                                ray.Direction = Direction.Left;
+                                break;
+                            case Direction.Left:
+                                ray.Direction = Direction.Bottom;
+                                break;
+                        }
+
+                        ray = GoStep(ray);
+                        rays.Enqueue(ray);
+                    }
+                        break;
+                    case '\\':
+                    {
+                        switch (ray.Direction)
+                        {
+                            case Direction.Up:
+                                ray.Direction = Direction.Left;
+                                break;
+                            case Direction.Right:
+                                ray.Direction = Direction.Bottom;
+                                break;
+                            case Direction.Bottom:
+                                ray.Direction = Direction.Right;
+                                break;
+                            case Direction.Left:
+                                ray.Direction = Direction.Up;
+                                break;
+                        }
+
+                        ray = GoStep(ray);
+                        rays.Enqueue(ray);
+                    }
+                        break;
+                    default:
+                    {
+                        ray = GoStep(ray);
+                        rays.Enqueue(ray);
+                    }
+                        break;
+                }
+            }
+
+            Int64 answer = 0;
+            foreach (StringBuilder builder in result)
+            {
+                foreach (char symbol in builder.ToString())
+                {
+                    if (symbol == '#')
+                    {
+                        answer++;
+                    }
+                }
+            }
+
+            return answer;
+        }
+
+        private static Ray GoStep(Ray ray)
+        {
+            Ray newRay = new Ray(ray.Position.X, ray.Position.Y, ray.Direction);
+            switch (newRay.Direction)
+            {
+                case Direction.Up    : newRay.Position.Y--; break;
+                case Direction.Right : newRay.Position.X++; break;
+                case Direction.Bottom: newRay.Position.Y++; break;
+                case Direction.Left  : newRay.Position.X--; break;
+            }
+
+            return newRay;
+        }
+
+        public class Ray : IComparable<Ray>
+        {
+            public Position Position;
+            public Direction Direction;
+
+            public Ray()
+            {
+                Position = new();
+                Direction = Direction.Right;
+            }
+            
+            public Ray(int x, int y, Direction direction)
+            {
+                Position = new(x, y);
+                Direction = direction;
+            }
+
+            public int CompareTo(Ray? other)
+            {
+                if (ReferenceEquals(this, other)) return 0;
+                if (ReferenceEquals(null, other)) return 1;
+                return Direction.CompareTo(other.Direction);
+            }
+        }
+
+        public enum Direction
+        {
+            Up     = 1,
+            Right  = 2,
+            Bottom = 3,
+            Left   = 4,
+        }
+
+        public struct Position
+        {
+            public int X;
+            public int Y;
+
+            public Position()
+            {
+                X = 0;
+                Y = 0;
+            }
+            
+            public Position(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+        }
+    }
+}

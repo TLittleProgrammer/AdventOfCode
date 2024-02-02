@@ -1,0 +1,108 @@
+namespace ConsoleApp3
+{
+    internal class Program
+    {
+        public static List<string> Matrix = new();
+        public static int Columns => Matrix[0].Length; 
+        public static int Rows => Matrix.Count;
+
+        public static int[] RowDirection    = { 0, 0, 1, -1 };
+        public static int[] ColumnDirection = { 1, -1, 0, 0 };
+
+        public static void Main(string[] args)
+        {
+            string[] lines = File.ReadAllLines("input.txt");
+            long answer = 0;
+
+            foreach (string line in lines)
+            {
+                Matrix.Add(line);
+            }
+
+            Stack<Path> stack = new();
+
+            var item = new Path(new(1, 0));
+            item.Visited[0, 1] = true;
+            stack.Push(item);
+            
+
+            while (stack.Count != 0)
+            {
+                Path path = stack.Pop();
+                path.Visited[path.Point.Y, path.Point.X] = true;
+                if (IsEndPoint(path))
+                {
+                    if (answer < path.StepsCounter)
+                    {
+                        answer = path.StepsCounter;
+                        Console.WriteLine(answer);
+                    }
+                }
+                
+                if (Matrix[path.Point.Y][path.Point.X] != '#')
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        Point newPoint = new Point(path.Point.X + ColumnDirection[i], path.Point.Y + RowDirection[i]);
+
+                        if (IsValid(newPoint) && path.Visited[newPoint.Y, newPoint.X] == false)
+                        {
+                            Path newPath = new Path(newPoint);
+
+                            for (int j = 0; j < Rows; j++)
+                            {
+                                for (int k = 0; k < Columns; k++)
+                                {
+                                    newPath.Visited[j, k] = path.Visited[j, k];
+                                }
+                            }
+
+                            newPath.StepsCounter = path.StepsCounter + 1;
+                            stack.Push(newPath);
+                        }
+                    }
+                }
+            }
+            
+            Console.WriteLine(answer + 1);
+        }
+
+        private static bool IsEndPoint(Path path)
+        {
+            return path.Point.X == Columns - 2 && path.Point.Y == Rows - 2;
+        }
+
+        private static bool IsValid(Point point)
+        {
+            return point.X >= 0 && point.X < Columns && point.Y >= 0 && point.Y < Rows;
+        }
+
+        public sealed class Path
+        {
+            public bool[,] Visited = new bool[Rows, Columns];
+            public int StepsCounter = 0;
+            public Point Point;
+
+            public Path(Point point)
+            {
+                Point = point;
+            }
+        }
+
+        public sealed class Point
+        {
+            public int X;
+            public int Y;
+
+            public Point()
+            {
+            }
+            
+            public Point(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+        }
+    }
+}

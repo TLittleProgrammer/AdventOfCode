@@ -1,0 +1,123 @@
+using System.Text;
+
+namespace ConsoleApp12
+{
+    internal class Program
+    {
+        public static void Main(string[] args)
+        {
+            List<StringBuilder> matrix = new List<StringBuilder>();
+            string[] lines = File.ReadAllLines("input.txt");
+            int maxLength = lines[0].Length;
+            int sum = 0;
+
+            FillMatrix(maxLength, matrix, lines);
+
+            for (int i = 1; i < matrix.Count - 2; i++)
+            {
+                StringBuilder currentLine = matrix[i];
+
+                for (int j = 1; j < maxLength; j++)
+                {
+                    if (!currentLine[j].Equals('.') && !IsDigit(currentLine[j]))
+                    {
+                        List<int> numbers = new List<int>();
+                        
+                        numbers.Add(GetNumberByPosition(j - 1, matrix[i - 1]));
+                        numbers.Add(GetNumberByPosition(j, matrix[i - 1]));
+                        numbers.Add(GetNumberByPosition(j + 1, matrix[i - 1]));
+                        
+                        numbers.Add(GetNumberByPosition(j - 1, matrix[i]));
+                        numbers.Add(GetNumberByPosition(j + 1, matrix[i]));
+                        
+                        numbers.Add(GetNumberByPosition(j - 1, matrix[i + 1]));
+                        numbers.Add(GetNumberByPosition(j, matrix[i + 1]));
+                        numbers.Add(GetNumberByPosition(j + 1, matrix[i + 1]));
+
+                        int numberCounter = 0;
+                        foreach (int number in numbers)
+                        {
+                            if (number != -1)
+                            {
+                                numberCounter++;
+                            }
+                        }
+
+                        if (numberCounter == 2)
+                        {
+                            int multiply = 1;
+                            
+                            foreach (int number in numbers)
+                            {
+                                if (number != -1)
+                                {
+                                    multiply *= number;
+                                }
+                            }
+
+                            sum += multiply;
+                        }
+                    }
+                }
+            }
+
+            Console.WriteLine(sum);
+        }
+
+        private static int GetNumberByPosition(int x, StringBuilder line)
+        {
+            if (!IsDigit(line[x]))
+            {
+                return -1;
+            }
+
+            int result = 0;
+            
+            while (IsDigit(line[x]))
+            {
+                x--;
+            }
+            
+            x++;
+
+            while (IsDigit(line[x]))
+            {
+                result = result * 10 + ConvertToNumber(line[x]);
+                line[x] = '.';
+                x++;
+            }
+            
+            return result;
+        }
+
+        private static void FillMatrix(int maxLength, List<StringBuilder> matrix, string[] lines)
+        {
+            string garbageString = "";
+            
+            for (int i = 0; i < maxLength; i++)
+            {
+                garbageString += '.';
+            }
+
+            garbageString += "..";
+            matrix.Add(new StringBuilder(garbageString));
+
+            foreach (string str in lines)
+            {
+                matrix.Add(new StringBuilder('.' + str + '.'));
+            }
+
+            matrix.Add(new StringBuilder(garbageString));
+        }
+
+        private static bool IsDigit(char symbol)
+        {
+            return symbol - '0' >= 0 && symbol - '0' <= 9;
+        }
+
+        private static int ConvertToNumber(char symbol)
+        {
+            return symbol - '0';
+        }
+    }
+}
